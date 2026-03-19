@@ -58,3 +58,5 @@ To run a batch processor, save your raw images into `raw/` and execute `python p
 * **wifi** (64x64): A modern standard wifi connection icon with white arched beams on a magenta background, added to `prompts.json` and generated.
 * **Rarities System Integration**: Added a programmatic color replacement feature into `process_textures.py` to target explicit rarity borders (or antialiasing borders) and replace them with `common`, `uncommon`, `rare`, `epic`, `legendary`, or `relic` outline colors, completely side-stepping image generation for rarities! Supported arrays within JSON. Outlined files correctly funnel into `/output/<id>/<rarity>.png` directories. You can specify `"base_rarity"` to define the starter color mathematically.
 * **camera** (256x256): A modern white bank security camera, wall-mounted CCTV style, on a magenta background, added to `prompts.json` and generated. Tested alongside the brand new rarities category mapping out every rarity level individually.
+* **GitHub Repository**: Project pushed to GitHub at [Voiddev18/mc-texture-generator](https://github.com/Voiddev18/mc-texture-generator).
+
