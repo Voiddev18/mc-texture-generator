@@ -1,0 +1,24 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Output and Raw images
+output/
+raw/
+
+# Build artifacts
+build/
+dist/
+*.spec
+
+# User specific files
+.agents/
+process_textures_backup.py
+test_*.py
+test_*.png
+*.log
+
+# Ignore OS files
+.DS_Store
+Thumbs.db

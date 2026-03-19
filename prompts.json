@@ -1,0 +1,93 @@
+[
+  {
+    "id": "sapphire_sword",
+    "prompt": "pixel art, a top-down sprite of a bright blue sapphire sword on a totally solid bright green background. 2D gaming asset, no grid, no lighting effects on background, pure #00FF00 background.",
+    "size": 16
+  },
+  {
+    "id": "emerald_shield",
+    "prompt": "pixel art, a top-down sprite of a glowing emerald shield on a totally solid bright green background. 2D gaming asset, no grid, no lighting effects on background, pure #00FF00 background.",
+    "size": 32
+  },
+  {
+    "id": "walkie_talkie",
+    "prompt": "pixel art, a top-down sprite of a modern tactical walkie talkie with buttons and an antenna on a totally solid bright magenta background. 2D gaming asset, no grid, no lighting effects on background, pure #FF00FF background.",
+    "size": 256
+  },
+  {
+    "id": "money_spread",
+    "prompt": "pixel art, top-down sprite of cash money in a spread, 3 green paper money bills laying on each other fanned out from bottom center. one bill is pointing diagonally left, one straight up, one pointing diagonally right. totally solid bright magenta background. 2D gaming asset, no grid, no lighting effects on background, pure #FF00FF background.",
+    "size": 128
+  },
+  {
+    "id": "camera",
+    "prompt": "pixel art, a top-down sprite of a modern white bank security camera, wall-mounted CCTV style, on a totally solid bright magenta background. 2D gaming asset, no grid, no lighting effects on background, pure #FF00FF background.",
+    "size": 256,
+    "rarities": ["common", "uncommon", "rare", "epic", "legendary", "relic"]
+  },
+  {
+    "id": "wifi",
+    "prompt": "pixel art, a top-down sprite of a modern standard wifi connection icon, white arched beams signaling connectivity, on a totally solid bright magenta background. 2D gaming asset, no grid, no lighting effects on background, pure #FF00FF background.",
+    "size": 64
+  },
+  {
+    "id": "bolt_cutters",
+    "prompt": "pixel art, a top-down sprite of a pair of bolt cutters floating in the absolute center with a thick and identifiable epic rarity purple border, on a totally solid dark purple background. 2D gaming asset, NO grid, NO outer canvas frame, NO square border around the image edge, NO box outline, pure dark purple background.",
+    "size": 256,
+    "rarities": ["epic", "uncommon", "legendary"]
+  },
+  {
+    "id": "flashbang",
+    "prompt": "pixel art, a top-down sprite of a standard military flashbang grenade floating in the absolute center with a thick and identifiable epic rarity purple border, on a totally solid dark purple background. 2D gaming asset, NO grid, NO outer canvas frame, NO square border around the image edge, NO box outline, pure dark purple background.",
+    "size": 128,
+    "rarities": ["epic", "common"],
+    "skins": [
+      {
+        "id": "cheetah",
+        "prompt": "pixel art, a top-down sprite of a standard military flashbang grenade painted with a cheetah print skin pattern floating in the absolute center with a thick and identifiable epic rarity purple border, on a totally solid dark purple background. 2D gaming asset, NO grid, NO outer canvas frame, NO square border around the image edge, NO box outline, pure dark purple background.",
+        "rarities": ["epic", "uncommon"]
+      }
+    ]
+  },
+  {
+    "id": "smoke_grenade",
+    "prompt": "pixel art, a top-down sprite of a standard military smoke grenade floating in the absolute center, no borders, no outline, on a totally solid bright magenta background. 2D gaming asset, NO grid, NO outer canvas frame, NO square border around the image edge, NO box outline, pure #FF00FF background.",
+    "size": 128,
+    "skins": [
+      {
+        "id": "galaxy",
+        "prompt": "pixel art, a top-down sprite of a standard military smoke grenade painted with a cosmic galaxy space skin pattern floating in the absolute center, no borders, no outline, on a totally solid bright magenta background. 2D gaming asset, NO grid, NO outer canvas frame, NO square border around the image edge, NO box outline, pure #FF00FF background."
+      }
+    ]
+  },
+  {
+    "id": "night_vision_goggles",
+    "prompt": "pixel art, a top-down sprite of standard night vision goggles floating in the absolute center, no borders, no outline, on a totally solid bright magenta background. 2D gaming asset, NO grid, NO outer canvas frame, NO square border around the image edge, NO box outline, pure #FF00FF background.",
+    "size": 256,
+    "skins": [
+      {
+        "id": "black_ops",
+        "prompt": "Apply a stealthy black ops tactical skin specifically to this exact night vision goggles sprite. Keep the exact same overall shape and outline without changing the underlying form. It should be floating in the absolute center, no borders, no outline, on a totally solid bright magenta background. 2D gaming asset, NO grid, NO outer canvas frame, NO square border around the image edge, NO box outline, pure #FF00FF background."
+      }
+    ]
+  },
+  {
+    "id": "knife",
+    "prompt": "pixel art, a top-down sprite of a tactical fixed-blade knife with a matte black drop-point steel blade, a serrated thumb ramp, and an olive drab green textured micarta handle with silver rivets. It should be pointing diagonally and floating in the absolute center, no borders, no outline, on a totally solid bright magenta background. 2D gaming asset, NO grid, NO outer canvas frame, NO square border around the image edge, NO box outline, pure #FF00FF background.",
+    "size": 128,
+    "skins": [
+      {
+        "id": "damascus",
+        "prompt": "Apply a wavy grey damascus steel pattern skin specifically to the blade of this exact knife sprite. Keep the exact same overall shape, outline, and handle without changing the underlying form. It should be floating in the absolute center, no borders, no outline, on a totally solid bright magenta background. 2D gaming asset, NO grid, NO outer canvas frame, NO square border around the image edge, NO box outline, pure #FF00FF background."
+      },
+      {
+        "id": "fade",
+        "prompt": "Apply a vibrant, colorful neon fade skin (gradient from pink to purple to yellow) specifically to the blade of this exact knife sprite. Keep the exact same overall shape, outline, and handle without changing the underlying form. It should be floating in the absolute center, no borders, no outline, on a totally solid bright magenta background. 2D gaming asset, NO grid, NO outer canvas frame, NO square border around the image edge, NO box outline, pure #FF00FF background."
+      },
+      {
+        "id": "rusted",
+        "prompt": "Apply a heavily rusted, corroded, and oxidized orange/brown skin specifically to the blade of this exact knife sprite. Keep the exact same overall shape, outline, and handle without changing the underlying form. It should be floating in the absolute center, no borders, no outline, on a totally solid bright magenta background. 2D gaming asset, NO grid, NO outer canvas frame, NO square border around the image edge, NO box outline, pure #FF00FF background."
+      }
+    ]
+  }
+]
