@@ -4,8 +4,7 @@ __pycache__/
 *$py.class
 
 # Output and Raw images
-output/
-raw/
+# These are now included in the repository
 
 # Build artifacts
 build/
