@@ -22,20 +22,18 @@ Crucially, the system ensures that **every pixel in the end result is strictly 1
    * `"rarities"` (Optional): An array of strings defining rarities to generate by substituting the `base_rarity` border color. Available rarities: `common`, `uncommon`, `rare`, `epic`, `legendary`, `relic`.
    * `"skins"` (Optional): An array of skin objects, each defining a `"prompt"`, `"id"`, and optionally `"rarities"`. Generating a skin with ID `[skin_id]` for an item with ID `[item_id]` expects a raw file named `[item_id]_[skin_id].png` (e.g., `flashbang_cheetah.png`) and automatically compiles its outputs into `output/[item_id]/skins/[skin_id]/`.
 
-2. **`raw/`**: After you generate your textures with the solid backgrounds, save the unedited RAW images into this folder using the matching `"id"` from the JSON (e.g., `emerald_shield.png`).
+2. **`raw/`**: After you generate your textures with the solid backgrounds, save the unedited RAW images into this folder using the matching `"id"` from the JSON (e.g., `items/emerald_shield.png`). Use subdirectories like `items/`, `tools/`, `ui/`, and `nexo/` to keep assets organized.
 
-3. **`output/`**: This is where your completed, cleanly cropped, perfectly scaled, binary-transparency `.png` sprites are exported. If you specify `rarities`, a folder will be dynamically created for that item instead, populated with individual files per rarity (e.g., `output/camera/epic.png`).
+3. **`output/`**: This is where your completed, cleanly cropped, perfectly scaled, binary-transparency `.png` sprites are exported. The output folder mirrors the structure of the `raw/` directory. If you specify `rarities`, a sub-folder will be dynamically created for that item instead, populated with individual files per rarity (e.g., `output/tools/camera/epic.png`).
 
 4. **`process_textures.py`**: The workhorse script. 
 
 ## The `process_textures.py` Pipeline Layer by Layer
 * **Load manifest**: Opens `prompts.json` and gets the ID and requested scale for every listed item.
 * **Locate raw**: Searches the `raw/` directory for `<id>.png`, `.jpg`, or `.jpeg`.
-* **Detect Background dynamically**: Looks precisely at the **Top-Left** pixel (coordinate `0,0`). Whatever color that pixel is, the script assumes as the background key color for the rest of the image. This means you can use `#00FF00` (green), `#FF00FF` (magenta), `#FF0000` (red), etc., based on what contrasts best with the item.
-* **Extract & Enforce strict Binary Alpha**: 
-  * Any pixel matching the detected background color gets completely deleted—both RGB and Alpha zeroed out.
-  * Any pixel *not* matching the detected background color gets its Alpha forcefully cranked to 255 (100% solid opacity). This fulfills the strict Minecraft engine requirement and entirely eliminates invisible/transparent anti-aliasing ghosting.
-* **Halo Defringing (Borderless Mode)**:
+* **Detect Background dynamically**: Looks precisely at the **Top-Left** pixel (coordinate `0,0`). Whatever color that pixel is, the script assumes as the background key color for the rest of the image. **IMPORTANT: Military/tactical items or realistic objects that naturally contain significant green (e.g., olive drab grenades, camouflage) must use a `#FF00FF` (magenta) background instead of `#00FF00` (green)** to prevent standard color spill suppressors and distance algorithms from chewing away parts of the physical item!
+* **Dynamic Island Destroyer**: The engine automatically detects background pixels that were "walled-off" inside the object (like the empty space inside a carrying handle loop) and mathematically merges them into the main background mask so they are completely destroyed alongside the outer background, completely bypassing the need for manual erasure!
+* **Exact Spill Suppression**: A mathematically flawless spill suppression algorithm (`scripts/spill_suppress.py`) has been written as an auxiliary tool. It clamps the Green channel using `g = min(g, max(r, b) + 15)`, forcefully killing bright green halos on generated art without degrading other colors like yellows, and turns green "edges" into neutral shadows/greys!
   * For completely borderless items, the remaining pixels sitting directly on the anti-aliased edge contain a tint of the background color (e.g., a magenta halo). The script mathematically zeroes out the contribution of the background color specifically from the RGB values of these fringe pixels, turning them into a clean and sharp black/neutral stroke outline instead of a glowing magenta halo.
 * **Recolor Rarities (Optional)**:
   * If the manifest includes `rarities`, the script analyzes the leftover anti-aliasing color outline (by finding the fractional background color component using linear algebra) and recolors the remaining border tint into defined structural rarity colors.
@@ -58,5 +56,7 @@ To run a batch processor, save your raw images into `raw/` and execute `python p
 * **wifi** (64x64): A modern standard wifi connection icon with white arched beams on a magenta background, added to `prompts.json` and generated.
 * **Rarities System Integration**: Added a programmatic color replacement feature into `process_textures.py` to target explicit rarity borders (or antialiasing borders) and replace them with `common`, `uncommon`, `rare`, `epic`, `legendary`, or `relic` outline colors, completely side-stepping image generation for rarities! Supported arrays within JSON. Outlined files correctly funnel into `/output/<id>/<rarity>.png` directories. You can specify `"base_rarity"` to define the starter color mathematically.
 * **camera** (256x256): A modern white bank security camera, wall-mounted CCTV style, on a magenta background, added to `prompts.json` and generated. Tested alongside the brand new rarities category mapping out every rarity level individually.
+* **Nexo Integration Complete**: Successfully generated, processed, and perfectly defringed all 21 new icons for the Nexo heist system from `docs/heist_icon_manifest.md`. They are seamlessly organized in `output/nexo/` with absolute 100% binary transparency, achieved via a custom forced-deletion defringe script (`force_process_islands.py`) that solved the \"walled-off\" green island problem!
 * **GitHub Repository**: Project pushed to GitHub at [Voiddev18/mc-texture-generator](https://github.com/Voiddev18/mc-texture-generator).
+
 

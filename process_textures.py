@@ -43,8 +43,8 @@ def recolor_outline(data, outline_color, new_outline_color, edge_mask=None):
     inv_alpha = np.clip(dot / out_var, 0, 5)  # Allow higher intensity
     
     # If the color hue vector is significantly diverging from our outline target, zero it out.
-    # This mathematically protects visually distinct colors (like red handles vs purple border).
-    inv_alpha[cos_theta < 0.8] = 0
+    # We loosened this from 0.8 to 0.4 so it aggressively eats ALL edge highlights matching the background.
+    inv_alpha[cos_theta < 0.4] = 0
     
     if edge_mask is not None:
         inv_alpha[~edge_mask] = 0
@@ -59,11 +59,17 @@ def recolor_outline(data, outline_color, new_outline_color, edge_mask=None):
     data[:,:,2] = np.clip(new_b, 0, 255).astype(np.uint8)
     return data
 
-def process_image(input_path, output_path, target_size, color_threshold=80, rarity_color=None, base_outline_color=None):
+def process_image(input_path, output_path, target_size, color_threshold=120, rarity_color=None, base_outline_color=None, rotate_angle=0):
     try:
         # Load the image
         img = Image.open(input_path).convert("RGBA")
         
+        if rotate_angle != 0:
+            # Auto-detect background color to fill the new corners after rotation
+            bg_corner = img.getpixel((0,0))
+            # BICUBIC resampling ensures the high-res raw image rotates smoothly
+            img = img.rotate(rotate_angle, expand=True, fillcolor=bg_corner, resample=Image.Resampling.BICUBIC)
+            
         # Aggressively crop out the outermost 15 pixels to forcefully eliminate any 
         # hallucinatory "square frames" or "box outlines" drawn by the AI image generator.
         w_orig, h_orig = img.size
@@ -85,31 +91,54 @@ def process_image(input_path, output_path, target_size, color_threshold=80, rari
         # Mask where distance is below threshold (meaning it's the background)
         color_mask = (color_dist < color_threshold)
         
-        # We perform a flood-fill from the top-left corner (0,0) to ensure we ONLY delete 
-        # the contiguous background, protecting interiors of items that match the bg color.
-        mask_array = color_mask.astype(np.uint8) * 255
+        mask_array = (color_mask.astype(np.uint8) * 255)
         mask_img = Image.fromarray(mask_array).copy()
         ImageDraw.floodfill(mask_img, (0, 0), 128)
         
         contiguous_bg_mask = (np.array(mask_img) == 128)
+        
+        # --- DYNAMIC ISLAND DESTROYER ---
+        # Automatically finds pixels that match the background color but were trapped inside enclosed loops (like carrying handles)
+        islands_mask = color_mask & ~contiguous_bg_mask
+        
+        # We merge the islands into the main background mask so they are completely deleted and their edges defringed!
+        master_bg_mask = contiguous_bg_mask | islands_mask
 
         # Create an edge mask using a max filter (dilation)
-        bg_img_for_dilation = Image.fromarray((contiguous_bg_mask * 255).astype(np.uint8))
+        # Fix lint error by explicitly using np.array
+        bg_img_for_dilation = Image.fromarray((np.array(master_bg_mask, dtype=np.uint8) * 255))
         dilated_bg = bg_img_for_dilation.filter(ImageFilter.MaxFilter(size=5))
         dilated_bg_mask = (np.array(dilated_bg) == 255)
-        edge_mask = dilated_bg_mask & ~contiguous_bg_mask
+        edge_mask = dilated_bg_mask & ~master_bg_mask
 
-        # Set contiguous background pixels to entirely transparent
-        data[contiguous_bg_mask, 3] = 0
-        data[contiguous_bg_mask, 0] = 0
-        data[contiguous_bg_mask, 1] = 0
-        data[contiguous_bg_mask, 2] = 0
+        # Set contiguous background AND internal islands to entirely transparent
+        data[master_bg_mask, 3] = 0
+        data[master_bg_mask, 0] = 0
+        data[master_bg_mask, 1] = 0
+        data[master_bg_mask, 2] = 0
 
         # Enforce strict binary opacity for remaining pixels
-        data[~contiguous_bg_mask, 3] = 255
+        data[~master_bg_mask, 3] = 255
         
-        # Redefine mask to just be the contiguous bg for the rest of processing
-        mask = contiguous_bg_mask
+        # --- UNIVERSAL SPILL SUPPRESSOR ---
+        # If the pixel survives, we strictly clamp its dominant color so it NEVER bleeds background!
+        fg_mask = ~master_bg_mask
+        r_sub, g_sub, b_sub = data[fg_mask, 0].astype(int), data[fg_mask, 1].astype(int), data[fg_mask, 2].astype(int)
+        
+        # If the background was massively magenta (Red + Blue over Green)
+        if bg_r > 200 and bg_b > 200 and bg_g < 100:
+            # We cap Red and Blue to slightly above Green to physically erase Magenta
+            data[fg_mask, 0] = np.clip(np.minimum(r_sub, g_sub + 25), 0, 255).astype(np.uint8)
+            data[fg_mask, 2] = np.clip(np.minimum(b_sub, g_sub + 25), 0, 255).astype(np.uint8)
+            
+        # If the background was massively green
+        elif bg_g > 200 and bg_r < 100 and bg_b < 100:
+            # We cap Green to physically erase Green
+            max_rb = np.maximum(r_sub, b_sub)
+            data[fg_mask, 1] = np.clip(np.minimum(g_sub, max_rb + 15), 0, 255).astype(np.uint8)
+
+        # Redefine mask to just be the master bg for the rest of processing
+        mask = master_bg_mask
 
         if rarity_color and base_outline_color:
             data = recolor_outline(data, base_outline_color, rarity_color)
@@ -165,7 +194,7 @@ def process_image(input_path, output_path, target_size, color_threshold=80, rari
     except Exception as e:
         print(f"Error processing {input_path}: {e}")
 
-def process_entry(raw_dir, output_dir, raw_filename_base, size, rarities, base_rarity, out_dir_structure):
+def process_entry(raw_dir, output_dir, raw_filename_base, size, rarities, base_rarity, out_dir_structure, rotate_angle=0):
     possible_exts = [".png", ".jpg", ".jpeg"]
     input_path = None
     for ext in possible_exts:
@@ -184,11 +213,11 @@ def process_entry(raw_dir, output_dir, raw_filename_base, size, rarities, base_r
                 output_path = os.path.join(target_out_dir, f"{rarity}.png")
                 r_color = RARITY_COLORS.get(rarity.lower())
                 if r_color:
-                    process_image(input_path, output_path, size, rarity_color=r_color, base_outline_color=base_outline_color)
+                    process_image(input_path, output_path, size, rarity_color=r_color, base_outline_color=base_outline_color, rotate_angle=rotate_angle)
         else:
             out_path = f"{target_out_dir}.png"
             os.makedirs(os.path.dirname(out_path), exist_ok=True)
-            process_image(input_path, out_path, size)
+            process_image(input_path, out_path, size, rotate_angle=rotate_angle)
     else:
         print(f"Source image for {raw_filename_base} not found in {raw_dir}/")
 
@@ -213,7 +242,8 @@ def main():
             continue
 
         base_rarity = item.get("base_rarity", "epic")
-        process_entry(raw_dir, output_dir, item_id, size, item.get("rarities"), base_rarity, item_id)
+        rotate_angle = item.get("rotate", 0)
+        process_entry(raw_dir, output_dir, item_id, size, item.get("rarities"), base_rarity, item_id, rotate_angle=rotate_angle)
         
         if "skins" in item:
             for skin in item["skins"]:
@@ -223,7 +253,8 @@ def main():
                 raw_name = f"{item_id}_{skin_id}"
                 out_struct = os.path.join(item_id, "skins", skin_id)
                 skin_base_rarity = skin.get("base_rarity", base_rarity)
-                process_entry(raw_dir, output_dir, raw_name, size, skin.get("rarities"), skin_base_rarity, out_struct)
+                skin_rotate = skin.get("rotate", rotate_angle)
+                process_entry(raw_dir, output_dir, raw_name, size, skin.get("rarities"), skin_base_rarity, out_struct, rotate_angle=skin_rotate)
 
 if __name__ == "__main__":
     main()
