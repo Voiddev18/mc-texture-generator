@@ -120,7 +120,8 @@
   {
     "id": "nexo/flashbang",
     "prompt": "pixel art, a top-down sprite of a tactical stun grenade with a smooth cylindrical silver-steel body and blue-colored top ring with realistic light glints, on a totally solid bright green background. 2D gaming asset, no grid, no lighting effects on background, pure #00FF00 background.",
-    "size": 128
+    "size": 128,
+    "rotate": 90
   },
   {
     "id": "nexo/smoke_grenade",
@@ -169,8 +170,10 @@
   },
   {
     "id": "nexo/thermal_drill",
-    "prompt": "pixel art, a top-down sprite of a heavy-duty portable handheld vault drill. It features a bright yellow industrial housing, a thick black ergonomic carrying handle, a built-in glowing digital display screen, and a massive silver diamond-tipped drill bit. It looks like a high-tech carryable weapon/tool, floating in the absolute center, no borders, no outline, on a totally solid bright magenta background. 2D gaming asset, NO grid, NO outer canvas frame, NO square border around the image edge, NO box outline, pure #FF00FF background.",
-    "size": 256
+    "prompt": "pixel art, a top-down sprite of a compact handheld thermal vault drill. It has a pistol-grip ergonomic handle, a sleek yellow and black industrial casing, a glowing red heat vent, and a long silver tungsten-tipped drill bit. It is designed to be held in one hand like a heavy-duty power tool. Floating in the absolute center, no borders, no outline, on a totally solid bright magenta background. 2D gaming asset, NO grid, NO outer canvas frame, NO square border around the image edge, NO box outline, pure #FF00FF background.",
+    "size": 256,
+    "rotate": -135,
+    "anchor": "bottom_left"
   },
   {
     "id": "nexo/ghost_role",

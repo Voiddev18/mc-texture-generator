@@ -59,7 +59,7 @@ def recolor_outline(data, outline_color, new_outline_color, edge_mask=None):
     data[:,:,2] = np.clip(new_b, 0, 255).astype(np.uint8)
     return data
 
-def process_image(input_path, output_path, target_size, color_threshold=120, rarity_color=None, base_outline_color=None, rotate_angle=0):
+def process_image(input_path, output_path, target_size, color_threshold=120, rarity_color=None, base_outline_color=None, rotate_angle=0, anchor="center"):
     try:
         # Load the image
         img = Image.open(input_path).convert("RGBA")
@@ -103,7 +103,7 @@ def process_image(input_path, output_path, target_size, color_threshold=120, rar
         
         # We merge the islands into the main background mask so they are completely deleted and their edges defringed!
         master_bg_mask = contiguous_bg_mask | islands_mask
-
+ 
         # Create an edge mask using a max filter (dilation)
         # Fix lint error by explicitly using np.array
         bg_img_for_dilation = Image.fromarray((np.array(master_bg_mask, dtype=np.uint8) * 255))
@@ -182,9 +182,14 @@ def process_image(input_path, output_path, target_size, color_threshold=120, rar
         # Create a blank target_size x target_size transparent image
         final_img = Image.new("RGBA", (target_size, target_size), (0, 0, 0, 0))
 
-        # Paste the resized item into the center of the final image
-        offset_x = (target_size - new_w) // 2
-        offset_y = (target_size - new_h) // 2
+        # Paste the resized item into the target area
+        if anchor == "bottom_left":
+            offset_x = 0
+            offset_y = target_size - new_h
+        else:
+            offset_x = (target_size - new_w) // 2
+            offset_y = (target_size - new_h) // 2
+            
         final_img.paste(resized_item, (offset_x, offset_y), resized_item)
 
         # Save to output
@@ -194,7 +199,7 @@ def process_image(input_path, output_path, target_size, color_threshold=120, rar
     except Exception as e:
         print(f"Error processing {input_path}: {e}")
 
-def process_entry(raw_dir, output_dir, raw_filename_base, size, rarities, base_rarity, out_dir_structure, rotate_angle=0):
+def process_entry(raw_dir, output_dir, raw_filename_base, size, rarities, base_rarity, out_dir_structure, rotate_angle=0, anchor="center"):
     possible_exts = [".png", ".jpg", ".jpeg"]
     input_path = None
     for ext in possible_exts:
@@ -213,11 +218,11 @@ def process_entry(raw_dir, output_dir, raw_filename_base, size, rarities, base_r
                 output_path = os.path.join(target_out_dir, f"{rarity}.png")
                 r_color = RARITY_COLORS.get(rarity.lower())
                 if r_color:
-                    process_image(input_path, output_path, size, rarity_color=r_color, base_outline_color=base_outline_color, rotate_angle=rotate_angle)
+                    process_image(input_path, output_path, size, rarity_color=r_color, base_outline_color=base_outline_color, rotate_angle=rotate_angle, anchor=anchor)
         else:
             out_path = f"{target_out_dir}.png"
             os.makedirs(os.path.dirname(out_path), exist_ok=True)
-            process_image(input_path, out_path, size, rotate_angle=rotate_angle)
+            process_image(input_path, out_path, size, rotate_angle=rotate_angle, anchor=anchor)
     else:
         print(f"Source image for {raw_filename_base} not found in {raw_dir}/")
 
@@ -243,7 +248,8 @@ def main():
 
         base_rarity = item.get("base_rarity", "epic")
         rotate_angle = item.get("rotate", 0)
-        process_entry(raw_dir, output_dir, item_id, size, item.get("rarities"), base_rarity, item_id, rotate_angle=rotate_angle)
+        anchor = item.get("anchor", "center")
+        process_entry(raw_dir, output_dir, item_id, size, item.get("rarities"), base_rarity, item_id, rotate_angle=rotate_angle, anchor=anchor)
         
         if "skins" in item:
             for skin in item["skins"]:
@@ -254,7 +260,8 @@ def main():
                 out_struct = os.path.join(item_id, "skins", skin_id)
                 skin_base_rarity = skin.get("base_rarity", base_rarity)
                 skin_rotate = skin.get("rotate", rotate_angle)
-                process_entry(raw_dir, output_dir, raw_name, size, skin.get("rarities"), skin_base_rarity, out_struct, rotate_angle=skin_rotate)
+                skin_anchor = skin.get("anchor", anchor)
+                process_entry(raw_dir, output_dir, raw_name, size, skin.get("rarities"), skin_base_rarity, out_struct, rotate_angle=skin_rotate, anchor=skin_anchor)
 
 if __name__ == "__main__":
     main()
